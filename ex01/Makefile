@@ -1,12 +1,12 @@
 .PHONY: all clean re
 
-NAME = megaphone
+NAME = phonebook
 FLAG = -std=c++98
 
 all: $(NAME)
 
 $(NAME):
-	g++ -o $(NAME) $(FLAG) megaphone.cpp
+	g++ -o $(NAME) $(FLAG) phonebook.cpp
 
 clean:
 	rm -f $(NAME)
