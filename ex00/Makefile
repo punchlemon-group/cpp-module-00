@@ -6,7 +6,7 @@ FLAG = -std=c++98
 all: $(NAME)
 
 $(NAME):
-	g++ -o $(NAME) $(FLAG) megaphone.cpp
+	g++ -o $(NAME) $(FLAG) main.cpp
 
 clean:
 	rm -f $(NAME)
