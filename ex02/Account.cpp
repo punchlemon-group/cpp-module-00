@@ -69,7 +69,7 @@ void Account::displayStatus() const {
     std::string strings[] = {
         formatKeyValue("index", _accountIndex),
         formatKeyValue("amount", _amount),
-        formatKeyValue("deposit", _nbDeposits),
+        formatKeyValue("deposits", _nbDeposits),
         formatKeyValue("withdrawals", _nbWithdrawals),
     ""};
     _displayTimestamp();
@@ -77,13 +77,16 @@ void Account::displayStatus() const {
 }
 
 void Account::makeDeposit(int deposit) {
+    int p_amount = _amount;
     _nbDeposits += 1;
     _totalNbDeposits += 1;
+    _amount += deposit;
+    _totalAmount += deposit;
     std::string strings[] = {
         formatKeyValue("index", _accountIndex),
-        formatKeyValue("p_amount", _amount),
+        formatKeyValue("p_amount", p_amount),
         formatKeyValue("deposit", deposit),
-        formatKeyValue("amount", _amount += deposit),
+        formatKeyValue("amount", _amount),
         formatKeyValue("nb_deposits", _nbDeposits),
     ""};
     _displayTimestamp();
@@ -103,23 +106,27 @@ void Account::displayAccountsInfos() {
 
 bool Account::makeWithdrawal(int withdrawal) {
     std::string withdrawal_str;
+    int p_amount;
 
+    p_amount = _amount;
     if (withdrawal > _amount)
         withdrawal_str = "withdrawal:refused";
     else
     {
-        std::string strings1[] = {
-            formatKeyValue("withdrawal", withdrawal),
-            formatKeyValue("amount", _amount -= withdrawal),
-            formatKeyValue("nb_deposits", _nbDeposits),
-        ""};
-        withdrawal_str = joinWithSemicolon(strings1);
         _nbWithdrawals += 1;
         _totalNbWithdrawals += 1;
+        _amount -= withdrawal;
+        _totalAmount -= withdrawal;
+        std::string strings1[] = {
+            formatKeyValue("withdrawal", withdrawal),
+            formatKeyValue("amount", _amount),
+            formatKeyValue("nb_withdrawals", _nbWithdrawals),
+        ""};
+        withdrawal_str = joinWithSemicolon(strings1);
     }
     std::string strings2[] = {
         formatKeyValue("index", _accountIndex),
-        formatKeyValue("p_amount", _amount),
+        formatKeyValue("p_amount", p_amount),
         withdrawal_str,
     ""};
     _displayTimestamp();
