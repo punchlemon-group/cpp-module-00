@@ -24,6 +24,10 @@ int Account::getNbWithdrawals( void ) {
     return _totalNbWithdrawals;
 }
 
+int Account::checkAmount( void ) const {
+    return _amount;
+}
+
 void Account::_displayTimestamp( void ) {
     time_t rawtime;
     struct tm *timeinfo;
@@ -68,7 +72,7 @@ std::string joinWithSemicolon(std::string strings[]) {
 void Account::displayStatus() const {
     std::string strings[] = {
         formatKeyValue("index", _accountIndex),
-        formatKeyValue("amount", _amount),
+        formatKeyValue("amount", checkAmount()),
         formatKeyValue("deposits", _nbDeposits),
         formatKeyValue("withdrawals", _nbWithdrawals),
     ""};
@@ -77,7 +81,7 @@ void Account::displayStatus() const {
 }
 
 void Account::makeDeposit(int deposit) {
-    int p_amount = _amount;
+    int p_amount = checkAmount();
     _nbDeposits += 1;
     _totalNbDeposits += 1;
     _amount += deposit;
@@ -86,7 +90,7 @@ void Account::makeDeposit(int deposit) {
         formatKeyValue("index", _accountIndex),
         formatKeyValue("p_amount", p_amount),
         formatKeyValue("deposit", deposit),
-        formatKeyValue("amount", _amount),
+        formatKeyValue("amount", checkAmount()),
         formatKeyValue("nb_deposits", _nbDeposits),
     ""};
     _displayTimestamp();
@@ -108,8 +112,8 @@ bool Account::makeWithdrawal(int withdrawal) {
     std::string withdrawal_str;
     int p_amount;
 
-    p_amount = _amount;
-    if (withdrawal > _amount)
+    p_amount = checkAmount();
+    if (withdrawal > checkAmount())
         withdrawal_str = "withdrawal:refused";
     else
     {
@@ -119,7 +123,7 @@ bool Account::makeWithdrawal(int withdrawal) {
         _totalAmount -= withdrawal;
         std::string strings1[] = {
             formatKeyValue("withdrawal", withdrawal),
-            formatKeyValue("amount", _amount),
+            formatKeyValue("amount", checkAmount()),
             formatKeyValue("nb_withdrawals", _nbWithdrawals),
         ""};
         withdrawal_str = joinWithSemicolon(strings1);
@@ -140,11 +144,11 @@ Account::Account(int amount) {
     _nbDeposits = 0;
     _nbWithdrawals = 0;
     _nbAccounts += 1;
-    _totalAmount += _amount;
+    _totalAmount += checkAmount();
 
     std::string strings[] = {
         formatKeyValue("index", _accountIndex),
-        formatKeyValue("amount", _amount),
+        formatKeyValue("amount", checkAmount()),
         "created",
     ""};
     _displayTimestamp();
@@ -153,13 +157,13 @@ Account::Account(int amount) {
 
 Account::~Account() {
     _nbAccounts -= 1;
-    _totalAmount -= _amount;
+    _totalAmount -= checkAmount();
     _totalNbDeposits -= _nbDeposits;
     _totalNbWithdrawals -= _nbWithdrawals;
 
     std::string strings[] = {
         formatKeyValue("index", _accountIndex),
-        formatKeyValue("amount", _amount),
+        formatKeyValue("amount", checkAmount()),
         "closed",
     ""};
     _displayTimestamp();
