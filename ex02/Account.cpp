@@ -1,60 +1,160 @@
 #include <iostream>
-#include <ctime>
 #include <iomanip>
 #include <sstream>
 #include "Account.hpp"
 
-#define START_YEAR 1970
-#define SECCONDS_IN_A_DAY 86400
+int Account::_nbAccounts = 0;
+int Account::_totalAmount = 0;
+int Account::_totalNbDeposits = 0;
+int Account::_totalNbWithdrawals = 0;
 
-void    printTimestamp() {
-    // 現在の時刻を取得
+int Account::getNbAccounts( void ) {
+    return _nbAccounts;
+}
+
+int Account::getTotalAmount( void ) {
+    return _totalAmount;
+}
+
+int Account::getNbDeposits( void ) {
+    return _totalNbDeposits;
+}
+
+int Account::getNbWithdrawals( void ) {
+    return _totalNbWithdrawals;
+}
+
+void Account::_displayTimestamp( void ) {
     time_t rawtime;
     struct tm *timeinfo;
-
-    time(&rawtime); // 現在の時刻を取得
-    timeinfo = localtime(&rawtime); // ローカルタイムに変換
-
-    // タイムスタンプの形式に合わせて出力
     std::ostringstream oss;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
     oss << "[" 
-        << (timeinfo->tm_year + 1900)  // 年（1900年を加算）
-        << std::setw(2) << std::setfill('0') << (timeinfo->tm_mon + 1)  // 月（1から12）
-        << std::setw(2) << std::setfill('0') << timeinfo->tm_mday        // 日
+        << (timeinfo->tm_year + 1900)
+        << std::setw(2) << std::setfill('0') << (timeinfo->tm_mon + 1)
+        << std::setw(2) << std::setfill('0') << timeinfo->tm_mday
         << "_"
-        << std::setw(2) << std::setfill('0') << timeinfo->tm_hour        // 時
-        << std::setw(2) << std::setfill('0') << timeinfo->tm_min         // 分
-        << std::setw(2) << std::setfill('0') << timeinfo->tm_sec         // 秒
+        << std::setw(2) << std::setfill('0') << timeinfo->tm_hour
+        << std::setw(2) << std::setfill('0') << timeinfo->tm_min
+        << std::setw(2) << std::setfill('0') << timeinfo->tm_sec
         << "]"
         << " ";
-
-    // 結果を出力
     std::cout << oss.str();
 }
 
-void    Account::displayStatus() const {
+std::string formatKeyValue(const char *str, int value) {
+    std::ostringstream oss;
+
+    oss << str << ":" << value;
+    return oss.str();
 }
 
-void    Account::makeDeposit(int a) {
+std::string joinWithSemicolon(std::string strings[]) {
+    std::ostringstream oss;
+    bool first = true;
+
+    for (size_t i = 0; !strings[i].empty(); ++i) {
+        if (first)
+            first = false;
+        else
+            oss << ";";
+        oss << strings[i];
+    }
+    return oss.str();
 }
 
-void    Account::displayAccountsInfos() {
+void Account::displayStatus() const {
+    std::string strings[] = {
+        formatKeyValue("index", _accountIndex),
+        formatKeyValue("amount", _amount),
+        formatKeyValue("deposit", _nbDeposits),
+        formatKeyValue("withdrawals", _nbWithdrawals),
+    ""};
+    _displayTimestamp();
+    std::cout << joinWithSemicolon(strings) << std::endl;
 }
 
-bool    Account::makeWithdrawal(int a) {
+void Account::makeDeposit(int deposit) {
+    _nbDeposits += 1;
+    _totalNbDeposits += 1;
+    std::string strings[] = {
+        formatKeyValue("index", _accountIndex),
+        formatKeyValue("p_amount", _amount),
+        formatKeyValue("deposit", deposit),
+        formatKeyValue("amount", _amount += deposit),
+        formatKeyValue("nb_deposits", _nbDeposits),
+    ""};
+    _displayTimestamp();
+    std::cout << joinWithSemicolon(strings) << std::endl;
+}
+
+void Account::displayAccountsInfos() {
+    std::string strings[] = {
+        formatKeyValue("accounts", getNbAccounts()),
+        formatKeyValue("total", getTotalAmount()),
+        formatKeyValue("deposits", getNbDeposits()),
+        formatKeyValue("withdrawals", getNbWithdrawals()),
+    ""};
+    _displayTimestamp();
+    std::cout << joinWithSemicolon(strings) << std::endl;
+}
+
+bool Account::makeWithdrawal(int withdrawal) {
+    std::string withdrawal_str;
+
+    if (withdrawal > _amount)
+        withdrawal_str = "withdrawal:refused";
+    else
+    {
+        std::string strings1[] = {
+            formatKeyValue("withdrawal", withdrawal),
+            formatKeyValue("amount", _amount -= withdrawal),
+            formatKeyValue("nb_deposits", _nbDeposits),
+        ""};
+        withdrawal_str = joinWithSemicolon(strings1);
+        _nbWithdrawals += 1;
+        _totalNbWithdrawals += 1;
+    }
+    std::string strings2[] = {
+        formatKeyValue("index", _accountIndex),
+        formatKeyValue("p_amount", _amount),
+        withdrawal_str,
+    ""};
+    _displayTimestamp();
+    std::cout << joinWithSemicolon(strings2) << std::endl;
     return true;
 }
 
-Account::Account(int amount) : _amount(amount) {
-    static int  index;
-    printTimestamp();
-    std::cout << "index:" << index << ";" << "amount:" << amount << ";created" << std::endl;
-    index++;
+Account::Account(int amount) {
+    _accountIndex = getNbAccounts();
+    _amount = amount;
+    _nbDeposits = 0;
+    _nbWithdrawals = 0;
+    _nbAccounts += 1;
+    _totalAmount += _amount;
+
+    std::string strings[] = {
+        formatKeyValue("index", _accountIndex),
+        formatKeyValue("amount", _amount),
+        "created",
+    ""};
+    _displayTimestamp();
+    std::cout << joinWithSemicolon(strings) << std::endl;
 }
 
 Account::~Account() {
-    static int  index;
-    printTimestamp();
-    std::cout << "index:" << index << ";" << "amount:" << _amount << ";closed" << std::endl;
-    index++;
+    _nbAccounts -= 1;
+    _totalAmount -= _amount;
+    _totalNbDeposits -= _nbDeposits;
+    _totalNbWithdrawals -= _nbWithdrawals;
+
+    std::string strings[] = {
+        formatKeyValue("index", _accountIndex),
+        formatKeyValue("amount", _amount),
+        "closed",
+    ""};
+    _displayTimestamp();
+    std::cout << joinWithSemicolon(strings) << std::endl;
 }
