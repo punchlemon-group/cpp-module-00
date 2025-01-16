@@ -1,11 +1,12 @@
-.PHONY: all clean re
+.PHONY: all clean fclean re
 
 NAME = phonebook
-FLAG = -std=c++98
 
+OUT_DIR = out
+
+SRCS_DIR = srcs
 CLASSES_DIR = classes
 INCLUDE_DIR = include
-SRCS_DIR = srcs
 
 SRCS = \
 $(addsuffix .cpp, \
@@ -18,12 +19,28 @@ $(addsuffix .cpp, \
 	) \
 ) \
 
+OBJS = $(addprefix $(OUT_DIR)/, $(SRCS:.cpp=.o))
+DEPS = $(addprefix $(OUT_DIR)/, $(SRCS:.cpp=.o))
+
+CFLAGS = -Wall -Wextra -Werror
+CXXFLAGS = -std=c++98
+IFLAGS = -I$(INCLUDE_DIR)
+LFLAGS =
+MFLAGS = -MMD -MP
+
 all: $(NAME)
 
-$(NAME):
-	g++ -o $(NAME) $(FLAG) -I$(INCLUDE_DIR) $(SRCS)
+$(NAME): $(OBJS)
+	$(CXX) -o $@ $(CFLAGS) $(IFLAGS) $(LFLAGS) $(CXXFLAGS) $^
+
+$(OUT_DIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) -o $@ $(CFLAGS) $(IFLAGS) $(CXXFLAGS) $(MFLAGS) -c $<
 
 clean:
-	rm -f $(NAME)
+	@rm -rf $(OUT_DIR)
 
-re: clean all
+fclean: clean
+	@rm -f $(NAME)
+
+re: fclean all

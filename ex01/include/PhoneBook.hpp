@@ -11,8 +11,10 @@ class PhoneBook {
         Contact contacts[NUM];
     public:
         void init();
-        void add();
-        void search();
+        bool add();
+        bool search();
 };
+
+bool isAllSpaces(const std::string& str);
 
 #endif
